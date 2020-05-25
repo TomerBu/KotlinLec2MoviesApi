@@ -14,7 +14,7 @@ interface MoviesDao {
     suspend fun saveMovies(movies: List<Movie>)
     //compiler replaces it with INSERT INTO Movies(id,..) VALUES(...)
 
-    @Query("SELECT * FROM movies")
+    @Query("SELECT * FROM movies ORDER BY popularity DESC")
     suspend fun getSavedMovies(): List<Movie>
 
     //fun haveFun(x:Int, y: Int): Int

@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import tomerbu.e.kotlinlec2moviesapi.movies.models.Movie
 
-@Database(entities = [Movie::class], version = 1)
+@Database(entities = [Movie::class], version = 2)
 abstract class MovieDatabase : RoomDatabase() {
     abstract fun moviesDao(): MoviesDao
     //dao has method insert, get
@@ -22,6 +22,7 @@ abstract class MovieDatabase : RoomDatabase() {
                 "movies"
             )
              //   .allowMainThreadQueries() //
+                .fallbackToDestructiveMigration()
                 .build()
         }
     }

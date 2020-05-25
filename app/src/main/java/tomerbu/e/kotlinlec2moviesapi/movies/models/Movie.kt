@@ -25,6 +25,7 @@ class Movie(
     @PrimaryKey
     val id: Int,
     val title: String,
+    val popularity:Double,
 
     //tell gson that poster_path = posterPath
     @SerializedName("poster_path")

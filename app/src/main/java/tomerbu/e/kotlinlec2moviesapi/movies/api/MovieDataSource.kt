@@ -23,7 +23,7 @@ class MovieDataSource {
 
     // fun getPopMovies(listener: MCallBack){}
 
-    suspend fun getPopularMovies(context: Context): List<Movie>? {
+    suspend fun getPopularMovies(context: Context): List<Movie> {
         val retrofit = Retrofit.Builder()
             .baseUrl("https://api.themoviedb.org/")
             .addConverterFactory(GsonConverterFactory.create())
@@ -44,7 +44,6 @@ class MovieDataSource {
                 throw exc
             }
         }
-
     }
 }
 //poster_path -> posterPath
