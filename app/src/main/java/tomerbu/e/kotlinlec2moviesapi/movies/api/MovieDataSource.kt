@@ -41,18 +41,18 @@ class MovieDataSource {
         //run request in the background, callback on the ui thread.
         service.getPopularMovies(API_KEY).enqueue(object : Callback<MovieResponse> {
             override fun onFailure(call: Call<MovieResponse>, t: Throwable) {
-                //GlobalScope.launch(Dispatchers.IO) {
-                val movies = MovieDatabase.create(context).moviesDao().getSavedMovies()
-                if (t is IOException && movies.isNotEmpty()) {
-                    //GlobalScope.launch(Dispatchers.Main) {
-                    //use the cached movies
-                    onMoviesReceived(movies) //background fetch -> UI Thread
-                    //}
-                    //kotlin co-routines
-                } else {
-                    onError(t) //tell the callback
+                GlobalScope.launch(Dispatchers.IO) {
+                    val movies = MovieDatabase.create(context).moviesDao().getSavedMovies()
+                    if (t is IOException && movies.isNotEmpty()) {
+                        GlobalScope.launch(Dispatchers.Main) {
+                            //use the cached movies
+                            onMoviesReceived(movies) //background fetch -> UI Thread
+                        }
+                        //kotlin co-routines
+                    } else {
+                        onError(t) //tell the callback
+                    }
                 }
-                //}
             }
 
             override fun onResponse(call: Call<MovieResponse>, response: Response<MovieResponse>) {
@@ -60,11 +60,11 @@ class MovieDataSource {
 
                 if (movies.isNotEmpty()) {
                     //background:
-                    //  GlobalScope.launch(Dispatchers.IO) {
-                    //code that runs in the background
-                    //Save movies to the database for better UX.
-                    MovieDatabase.create(context).moviesDao().saveMovies(movies)
-                    //}
+                    GlobalScope.launch(Dispatchers.IO) {
+                        //code that runs in the background
+                        //Save movies to the database for better UX.
+                        MovieDatabase.create(context).moviesDao().saveMovies(movies)
+                    }
                     //tell the callback
                     onMoviesReceived(movies)
                 }

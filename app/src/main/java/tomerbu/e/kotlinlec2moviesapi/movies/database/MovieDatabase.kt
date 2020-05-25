@@ -21,7 +21,7 @@ abstract class MovieDatabase : RoomDatabase() {
                 MovieDatabase::class.java,
                 "movies"
             )
-                .allowMainThreadQueries() //
+             //   .allowMainThreadQueries() //
                 .build()
         }
     }
