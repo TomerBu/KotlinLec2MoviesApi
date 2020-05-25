@@ -1,12 +1,9 @@
 package tomerbu.e.kotlinlec2moviesapi.movies.models
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
+import kotlinx.coroutines.launch
 import tomerbu.e.kotlinlec2moviesapi.movies.api.MovieDataSource
-import java.lang.Exception
 
 class MovieViewModel(app: Application) : AndroidViewModel(app) {
     //how does a View Model report errors?
@@ -17,7 +14,9 @@ class MovieViewModel(app: Application) : AndroidViewModel(app) {
 
     private val movies: MutableLiveData<List<Movie>> by lazy {
         //init block for the property:
-        refreshMovies()
+        viewModelScope.launch {
+            refreshMovies()
+        }
         return@lazy MutableLiveData<List<Movie>>()
     }
 
@@ -31,14 +30,14 @@ class MovieViewModel(app: Application) : AndroidViewModel(app) {
         return moviesError
     }
 
-    private fun refreshMovies() {
+    private suspend fun refreshMovies() {
         //async work (repo get data)
-        MovieDataSource().getPopularMovies(onMoviesReceived = {
-            //update the live data:
-            movies.postValue(it)
-        }, onError = {
-            moviesError.postValue(it)
-        }, context = getApplication())
+        try {
+            val moviesFromDS = MovieDataSource().getPopularMovies(getApplication())
+            movies.postValue(moviesFromDS)
+        } catch (exc: Throwable) {
+            moviesError.postValue(exc)
+        }
     }
     //show data nicely
     //init to get the movies / exc that the fragment needs

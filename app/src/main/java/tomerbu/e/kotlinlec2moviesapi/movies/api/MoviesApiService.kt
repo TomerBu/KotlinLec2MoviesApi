@@ -12,16 +12,16 @@ interface MoviesApiService {
     //fun getPopular(...) //api key
 
     @GET("/3/movie/popular")
-    fun getPopularMovies(
+    suspend fun getPopularMovies(
         @Query("api_key") apiKey: String
-    ): Call<MovieResponse>
+    ): MovieResponse
 
     ///3/movie/popular?api_key=faf1c1f47ce8b75b085fededbb280341
 
     @GET("/3/movie/latest")
-    fun getLatestMovies(
+    suspend fun getLatestMovies(
         @Query("api_key") apiKey: String
-    ): Call<MovieResponse>
+    ): MovieResponse
 }
 
 //https://api.themoviedb.org/3/movie/popular?api_key=faf1c1f47ce8b75b085fededbb280341&language=en-US&page=1

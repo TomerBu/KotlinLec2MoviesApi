@@ -23,12 +23,7 @@ class MovieDataSource {
 
     // fun getPopMovies(listener: MCallBack){}
 
-    fun getPopularMovies(
-        onMoviesReceived: (List<Movie>) -> Unit,
-        onError: (Throwable) -> Unit,
-        context: Context
-    ) {
-
+    suspend fun getPopularMovies(context: Context): List<Movie>? {
         val retrofit = Retrofit.Builder()
             .baseUrl("https://api.themoviedb.org/")
             .addConverterFactory(GsonConverterFactory.create())
@@ -36,40 +31,20 @@ class MovieDataSource {
 
         val service: MoviesApiService = retrofit.create(MoviesApiService::class.java)
 
-
-        /*No Lambda -> anonymous*/
-        //run request in the background, callback on the ui thread.
-        service.getPopularMovies(API_KEY).enqueue(object : Callback<MovieResponse> {
-            override fun onFailure(call: Call<MovieResponse>, t: Throwable) {
-                GlobalScope.launch(Dispatchers.IO) {
-                    val movies = MovieDatabase.create(context).moviesDao().getSavedMovies()
-                    if (t is IOException && movies.isNotEmpty()) {
-                        GlobalScope.launch(Dispatchers.Main) {
-                            //use the cached movies
-                            onMoviesReceived(movies) //background fetch -> UI Thread
-                        }
-                        //kotlin co-routines
-                    } else {
-                        onError(t) //tell the callback
-                    }
-                }
+        val dao = MovieDatabase.create(context).moviesDao()
+        return try {
+            val movies = service.getPopularMovies(API_KEY).movies
+            dao.saveMovies(movies)
+            movies
+        } catch (exc: Throwable) {
+            val movies = dao.getSavedMovies()
+            if (exc is IOException && movies.isNotEmpty()){
+                movies
+            }else{
+                throw exc
             }
+        }
 
-            override fun onResponse(call: Call<MovieResponse>, response: Response<MovieResponse>) {
-                val movies = response.body()?.movies ?: emptyList()
-
-                if (movies.isNotEmpty()) {
-                    //background:
-                    GlobalScope.launch(Dispatchers.IO) {
-                        //code that runs in the background
-                        //Save movies to the database for better UX.
-                        MovieDatabase.create(context).moviesDao().saveMovies(movies)
-                    }
-                    //tell the callback
-                    onMoviesReceived(movies)
-                }
-            }
-        })
     }
 }
 //poster_path -> posterPath
